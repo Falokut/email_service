@@ -11,6 +11,7 @@ services:
       - kafka_network
     volumes:
       - ./docker/containers-configs/config.yml:/configs/config.yml
+      - ./temlplates:/templates
     depends_on:
       - kafka
     environment:
