@@ -1,12 +1,9 @@
 package email
 
 import (
-	"bytes"
+	"context"
 	"crypto/tls"
-	"fmt"
-	"html/template"
 
-	"github.com/k3a/html2text"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/gomail.v2"
 )
@@ -14,61 +11,44 @@ import (
 type MailSender struct {
 	logger       *logrus.Logger
 	dialler      *gomail.Dialer
-	temp         *template.Template
-	EmailAddress string
+	emailAddress string
 }
 
 type MailSenderConfig struct {
-	Password        string `env:"EMAIL_PASSWORD"`
-	Port            int    `yaml:"email_port"`
-	Host            string `yaml:"email_host"`
-	EmailAddress    string `yaml:"email_address"`
-	EmailLogin      string `yaml:"email_login"`
-	EnableTLS       bool   `yaml:"enable_TLS"`
-	TemplatesOrigin string `yaml:"templates_origin"`
+	Password     string `yaml:"email_password" env:"EMAIL_PASSWORD"`
+	Port         int    `yaml:"email_port" env:"EMAIL_PORT"`
+	Host         string `yaml:"email_host" env:"EMAIL_HOST"`
+	EmailAddress string `yaml:"email_address" env:"EMAIL_ADDRESS"`
+	EmailLogin   string `yaml:"email_login" env:"EMAIl_LOGIN"`
+	EnableTLS    bool   `yaml:"enable_TLS" env:"ENABLE_TLS"`
 }
 
 func NewMailSender(cfg MailSenderConfig, logger *logrus.Logger) *MailSender {
-	temp := template.Must(template.ParseGlob(fmt.Sprintf("%s/*.html", cfg.TemplatesOrigin)))
-
-	s := MailSender{logger: logger, EmailAddress: cfg.EmailAddress, temp: temp}
+	s := MailSender{logger: logger, emailAddress: cfg.EmailAddress}
 
 	s.logger.Infoln("Creating mail dialler.")
 	s.dialler = gomail.NewDialer(cfg.Host, cfg.Port, cfg.EmailLogin, cfg.Password)
 	s.dialler.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-
 	return &s
 }
 
-type EmailData struct {
-	URL     string
-	Subject string
-	LinkTTL string
-}
-
-func (s *MailSender) SendEmail(data *EmailData, EmailTo string, templateName string) error {
-	var body bytes.Buffer
-
-	if err := s.temp.ExecuteTemplate(&body, templateName, &data); err != nil {
-		return err
-	}
-
+func (s *MailSender) SendEmail(ctx context.Context, email string, subject string, emailBody, altBody string) error {
 	sender, err := s.dialler.Dial()
 	if err != nil {
+		s.logger.Error(err)
 		return err
 	}
+	defer sender.Close()
 
 	s.logger.Infoln("Creating message.")
 	m := gomail.NewMessage()
-	m.SetHeader("From", s.EmailAddress)
-	m.SetHeader("Subject", data.Subject)
-	m.AddAlternative("text/plain", html2text.HTML2Text(body.String()))
-	m.SetBody("text/html", body.String())
-	defer sender.Close()
+	m.SetHeader("From", s.emailAddress)
+	m.SetHeader("Subject", subject)
+	m.AddAlternative("text/plain", altBody)
+	m.SetBody("text/html", emailBody)
 
 	s.logger.Infoln("Sending message.")
-	if err := sender.Send(s.EmailAddress, []string{EmailTo}, m); err != nil {
-		s.logger.Debug(EmailTo)
+	if err := sender.Send(s.emailAddress, []string{email}, m); err != nil {
 		s.logger.Error(err.Error())
 		return nil
 	}

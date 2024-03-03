@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"errors"
 	"math"
 	"strconv"
 )
@@ -14,42 +13,34 @@ const (
 	secondsInWeek   = 7 * secondsInDay
 )
 
-func ResolveTime(timeInSeconds float64) (string, error) {
-	if timeInSeconds < second {
-		return "", errors.New("Time less than second")
-	}
-
+func ResolveTime(timeInSeconds float64) string {
 	if timeInSeconds == second {
-		return "1 second", nil
+		return "1 секунда"
 	}
 
 	if timeInSeconds <= 1.5*secondsInMinute {
-		return strconv.Itoa(int(timeInSeconds)) + " seconds", nil
+		return strconv.Itoa(int(timeInSeconds)) + " секунд"
 	}
 
 	if timeInSeconds <= 1.5*secondsInHour {
 		minutes := math.Round(timeInSeconds / secondsInMinute)
-		return strconv.Itoa(int(minutes)) + " minutes", nil
+		return strconv.Itoa(int(minutes)) + " минут"
 	}
 
 	if timeInSeconds < 24*secondsInHour {
 		hours := math.Round(timeInSeconds / secondsInHour)
-		return strconv.Itoa(int(hours)) + " hours", nil
+		return strconv.Itoa(int(hours)) + " часов"
 	}
 
 	if timeInSeconds == secondsInDay {
-		return "1 day", nil
+		return "1 день"
 	}
 
 	if timeInSeconds < secondsInWeek {
 		days := math.Round(timeInSeconds / secondsInDay)
-		return strconv.Itoa(int(days)) + " days", nil
-	}
-
-	if timeInSeconds > 10*secondsInWeek {
-		return "", errors.New("More than 10 weeks")
+		return strconv.Itoa(int(days)) + " дней"
 	}
 
 	weeks := math.Round(timeInSeconds / secondsInWeek)
-	return strconv.Itoa(int(weeks)) + " weeks", nil
+	return strconv.Itoa(int(weeks)) + " недель"
 }

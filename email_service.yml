@@ -11,13 +11,13 @@ services:
       - kafka_network
     volumes:
       - ./docker/containers-configs/config.yml:/configs/config.yml
-      - ./temlplates:/templates
+      - ./templates:/templates
     depends_on:
       - kafka
     environment:
       EMAIL_PASSWORD: ${EMAIL_PASSWORD}
     deploy:
       mode: replicated
-      replicas: 2
+      replicas: 1
       restart_policy:
         condition: unless-stopped
