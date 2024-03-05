@@ -55,10 +55,8 @@ if supported values is empty, then any type values are supported
 ### Secure connection config
 |yml name| param type| description | supported values |
 |-|-|-|-|
-|dial_method|string|dial method|INSECURE,INSECURE_SKIP_VERIFY,CLIENT_WITH_SYSTEM_CERT_POOL,SERVER|
+|dial_method|string|dial method|INSECURE,INSECURE_SKIP_VERIFY,CLIENT_WITH_SYSTEM_CERT_POOL|
 |server_name|string|server name overriding, used when dial_method=CLIENT_WITH_SYSTEM_CERT_POOL||
-|cert_name|string|certificate file name, used when dial_method=SERVER||
-|key_name|string|key file name, used when dial_method=SERVER||
 
 ### Kafka reader config
 |yml name| env name|param type| description | supported values |

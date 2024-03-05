@@ -84,8 +84,6 @@ type ConnectionSecureConfig struct {
 	Method DialMethod `yaml:"dial_method"`
 	// Only for client connection with system pool
 	ServerName string `yaml:"server_name"`
-	CertName   string `yaml:"cert_name"`
-	KeyName    string `yaml:"key_name"`
 }
 
 func (c ConnectionSecureConfig) GetGrpcTransportCredentials() (grpc.DialOption, error) {
